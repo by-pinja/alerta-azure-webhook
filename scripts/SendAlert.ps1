@@ -106,6 +106,8 @@ $bodyResolved = '
     }
 }'
 
-$request = "http://localhost:8080/api/webhooks/pinjaazuremonitor?api-key=SzqHdwASjo0Rn9KivBvq4Ut-qyu6vl8tVbE3_87j"
+$body = if($Action -eq "Fired") { $bodyFired } else { $bodyResolved }
+
+$request = "http://$AlertaHost/api/webhooks/pinjaazuremonitor?api-key=$ApiKey"
 
 Invoke-RestMethod -Method POST $request -Body $body -ContentType "application/json"
