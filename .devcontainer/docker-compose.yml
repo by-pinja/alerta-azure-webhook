@@ -1,0 +1,16 @@
+version: '3'
+services:
+    dev-container:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+        - ..:/workspace:cached
+        environment:
+        - DATABASE_URL=mongodb://mongo:27017/monitoring
+
+        command: sleep infinity
+
+    mongo:
+        image: mongo
+        restart: always
