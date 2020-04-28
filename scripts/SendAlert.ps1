@@ -2,7 +2,7 @@
 Param(
     [string][Parameter(Mandatory)]$ApiKey,
     [ValidateSet("Fired", "Resolved")]
-    [string][Parameter(Mandatory)]$Action,
+    [string][Parameter(Mandatory)]$Condition,
     [string][Parameter()]$AlertaHost = "http://localhost:8080"
 )
 
@@ -106,8 +106,8 @@ $bodyResolved = '
     }
 }'
 
-$body = if($Action -eq "Fired") { $bodyFired } else { $bodyResolved }
+$body = if($Condition -eq "Fired") { $bodyFired } else { $bodyResolved }
 
-$request = "http://$AlertaHost/api/webhooks/pinjaazuremonitor?api-key=$ApiKey"
+$request = "$AlertaHost/api/webhooks/pinjaazuremonitor?api-key=$ApiKey"
 
-Invoke-RestMethod -Method POST $request -Body $body -ContentType "application/json"
+Invoke-RestMethod -Method POST $request -Body $body -ContentType "application/json" -verbose
