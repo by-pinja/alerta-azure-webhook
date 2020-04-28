@@ -8,6 +8,12 @@ Features:
 - Parse any link in description as clickable link.
 - Parse link from alert to azure portal which gives easy access to original alert and resources.
 
+To install this extension to alerta:
+
+```bash
+pip install git+https://github.com/by-pinja/alerta-azure-webhook.git#subdirectory=webhook
+```
+
 ## Query parameters
 
 You can add certain additional parameters to webhooks for additional information that isn't available in common alert schema payload.
@@ -17,7 +23,7 @@ For example `http://localhost:8080/api/webhooks/pinjaazuremonitor?api-key=apikey
 - Service: `service`
 - Environment: `environment` (defaults to 'Production').
 
-## Requirements
+## Requirements for development
 
 Repository contains development container that can be used with VScode remote container development.
 
