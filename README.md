@@ -22,6 +22,7 @@ For example `http://localhost:8080/api/webhooks/pinjaazuremonitor?api-key=apikey
 
 - Service: `service`
 - Environment: `environment` (defaults to 'Production').
+- Runbook: `runbook_url`, add custom link to runbook with alerts.
 
 ## Requirements for development
 

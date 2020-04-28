@@ -71,10 +71,10 @@ class AzureMonitorWebhook(WebhookBase):
         attributes = {}
 
         incident_url = "https://ms.portal.azure.com/#blade/Microsoft_Azure_Monitoring/AlertDetailsTemplateBlade/alertId/{}".format(encoded_alert_id)
-        attributes['AzureMonitoringAlertUrl'] = "<a href=\"{}\" target=\"_blank\">{}</a>".format(incident_url, incident_url)
+        attributes['AzureMonitoringAlertUrl'] = "<a href=\"{}\" target=\"_blank\">{}</a> (Prefer incognito mode to prevent tenant switching issues)".format(incident_url, incident_url)
 
-        #if query_string.get('runbook_url'):
-        attributes['runBook'] = "<a href=\"{}\" target=\"_blank\">{}</a>".format(query_string.get('runbook_url', ''), query_string.get('runbook_url', ''))
+        if query_string.get('runbook_url'):
+            attributes['runBook'] = "<a href=\"{}\" target=\"_blank\">{}</a>".format(query_string.get('runbook_url', ''), query_string.get('runbook_url', ''))
 
         return Alert(
             resource=resource,

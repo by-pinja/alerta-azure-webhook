@@ -16,7 +16,7 @@ class AzureMonitoringWebhookTestCase(unittest.TestCase):
 
         custom_webhooks.webhooks['azuremonitor'] = alerta_pinjaazuremonitor.AzureMonitorWebhook()
 
-    def test_azuremonitor_webhook_commonschema(self):
+    def test_azuremonitor_webhook_commonschema_fired(self):
 
         """ See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/alerts-common-schema-definitions """
 
@@ -25,19 +25,18 @@ class AzureMonitoringWebhookTestCase(unittest.TestCase):
             "schemaId": "azureMonitorCommonAlertSchema",
             "data": {
                 "essentials": {
-                    "alertId": "/subscriptions/<subscription ID>/providers/Microsoft.AlertsManagement/alerts/b9569717-bc32-442f-add5-83a997729330",
-                    "alertRule": "WCUS-R2-Gen2",
-                    "severity": "Sev3",
+                    "alertId": "/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/providers/Microsoft.AlertsManagement/alerts/3dccd863-894e-44ed-a8bf-f73f15e3f48c",
+                    "alertRule": "Testrule too many good results",
+                    "severity": "Sev1",
                     "signalType": "Metric",
-                    "monitorCondition": "Resolved",
+                    "monitorCondition": "Fired",
                     "monitoringService": "Platform",
                     "alertTargetIDs": [
-                        "/subscriptions/<subscription ID>/resourcegroups/pipelinealertrg/providers/microsoft.compute/virtualmachines/wcus-r2-gen2"
+                        "/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/resourcegroups/testalert1/providers/microsoft.web/sites/alert-testing-web-foo"
                     ],
-                    "originAlertId": "3f2d4487-b0fc-4125-8bd5-7ad17384221e_PipeLineAlertRG_microsoft.insights_metricAlerts_WCUS-R2-Gen2_-117781227",
-                    "firedDateTime": "2019-03-22T13:58:24.3713213Z",
-                    "resolvedDateTime": "2019-03-22T14:03:16.2246313Z",
-                    "description": "Such bad alert, help here https://helpme.io/ or http://helpme.foo",
+                    "originAlertId": "90e39383-9de0-4f45-a582-3ab5a6428637_testalert1_microsoft.insights_metricAlerts_foobar_-1615335870",
+                    "firedDateTime": "2020-04-28T11:07:37.1106903Z",
+                    "description": "Description here, links https://fixme.io, http://foo.bar",
                     "essentialsVersion": "1.0",
                     "alertContextVersion": "1.0"
                 },
@@ -45,23 +44,26 @@ class AzureMonitoringWebhookTestCase(unittest.TestCase):
                     "properties": null,
                     "conditionType": "SingleResourceMultipleMetricCriteria",
                     "condition": {
-                        "windowSize": "PT5M",
+                        "windowSize": "PT1M",
                         "allOf": [
-                        {
-                            "metricName": "Percentage CPU",
-                            "metricNamespace": "Microsoft.Compute/virtualMachines",
-                            "operator": "GreaterThan",
-                            "threshold": "25",
-                            "timeAggregation": "Average",
-                            "dimensions": [
                             {
-                                "name": "ResourceId",
-                                "value": "3efad9dc-3d50-4eac-9c87-8b3fd6f97e4e"
+                                "metricName": "Http2xx",
+                                "metricNamespace": "Microsoft.Web/sites",
+                                "operator": "GreaterThan",
+                                "threshold": "1",
+                                "timeAggregation": "Total",
+                                "dimensions": [
+                                    {
+                                        "name": "ResourceId",
+                                        "value": "alert-testing-web-foo.azurewebsites.net"
+                                    }
+                                ],
+                                "metricValue": 27,
+                                "webTestName": null
                             }
-                            ],
-                            "metricValue": 7.727
-                        }
-                        ]
+                        ],
+                        "windowStartTime": "2020-04-28T11:03:21.624Z",
+                        "windowEndTime": "2020-04-28T11:04:21.624Z"
                     }
                 }
             }
@@ -72,79 +74,72 @@ class AzureMonitoringWebhookTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 201, response.data)
         data = json.loads(response.data.decode('utf-8'))
-        # self.assertEqual(data['alert']['resource'], 'diag500')
-        # self.assertEqual(data['alert']['event'], 'StorageCheck')
-        # self.assertEqual(data['alert']['environment'], 'Production')
-        # self.assertEqual(data['alert']['severity'], 'informational')
-        # self.assertEqual(data['alert']['status'], 'open')
-        # self.assertEqual(data['alert']['service'], ['Microsoft.Storage/storageAccounts'])
-        # self.assertEqual(data['alert']['group'], 'Contoso')
-        # self.assertEqual(data['alert']['value'], '1 Transactions')
-        # self.assertEqual(data['alert']['text'], 'INFORMATIONAL: 1 Transactions (GreaterThan 0)')
-        # self.assertEqual(sorted(data['alert']['tags']), ['key1=value1', 'key2=value2'])
+        self.assertEqual(data['alert']['resource'], '/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/resourcegroups/testalert1/providers/microsoft.web/sites/alert-testing-web-foo')
+        self.assertEqual(data['alert']['event'], 'Testrule too many good results (3dccd863-894e-44ed-a8bf-f73f15e3f48c)')
+        self.assertEqual(data['alert']['resource'], '/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/resourcegroups/testalert1/providers/microsoft.web/sites/alert-testing-web-foo')
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], 'Open')
 
-        # new_metric_alert = r"""
-        # {
-        #     "schemaId": "azureMonitorCommonAlertSchema",
-        #     "data": {
-        #         "essentials": {
-        #         "alertId": "/subscriptions/<subscription ID>/providers/Microsoft.AlertsManagement/alerts/b9569717-bc32-442f-add5-83a997729330",
-        #         "alertRule": "WCUS-R2-Gen2",
-        #         "severity": "Sev3",
-        #         "signalType": "Metric",
-        #         "monitorCondition": "Resolved",
-        #         "monitoringService": "Platform",
-        #         "alertTargetIDs": [
-        #             "/subscriptions/<subscription ID>/resourcegroups/pipelinealertrg/providers/microsoft.compute/virtualmachines/wcus-r2-gen2"
-        #         ],
-        #         "originAlertId": "3f2d4487-b0fc-4125-8bd5-7ad17384221e_PipeLineAlertRG_microsoft.insights_metricAlerts_WCUS-R2-Gen2_-117781227",
-        #         "firedDateTime": "2019-03-22T13:58:24.3713213Z",
-        #         "resolvedDateTime": "2019-03-22T14:03:16.2246313Z",
-        #         "description": "",
-        #         "essentialsVersion": "1.0",
-        #         "alertContextVersion": "1.0"
-        #         },
-        #         "alertContext": {
-        #         "properties": null,
-        #         "conditionType": "SingleResourceMultipleMetricCriteria",
-        #         "condition": {
-        #             "windowSize": "PT5M",
-        #             "allOf": [
-        #             {
-        #                 "metricName": "Percentage CPU",
-        #                 "metricNamespace": "Microsoft.Compute/virtualMachines",
-        #                 "operator": "GreaterThan",
-        #                 "threshold": "25",
-        #                 "timeAggregation": "Average",
-        #                 "dimensions": [
-        #                 {
-        #                     "name": "ResourceId",
-        #                     "value": "3efad9dc-3d50-4eac-9c87-8b3fd6f97e4e"
-        #                 }
-        #                 ],
-        #                 "metricValue": 7.727
-        #             }
-        #             ]
-        #         }
-        #         }
-        #     }
-        # }
-        # """
+    def test_azuremonitor_webhook_commonschema_resolved(self):
 
-        # response = self.client.post('/webhooks/azuremonitor?environment=Development', data=new_metric_alert, content_type='application/json')
+        """ See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/alerts-common-schema-definitions """
 
-        # self.assertEqual(response.status_code, 201, response.data)
-        # data = json.loads(response.data.decode('utf-8'))
-        # self.assertEqual(data['alert']['resource'], 'web01')
-        # self.assertEqual(data['alert']['event'], 'CpuUtilHigh')
-        # self.assertEqual(data['alert']['environment'], 'Development')
-        # self.assertEqual(data['alert']['severity'], 'ok')
-        # self.assertEqual(data['alert']['status'], 'closed')
-        # self.assertEqual(data['alert']['service'], ['Microsoft.Compute/virtualMachines'])
-        # self.assertEqual(data['alert']['group'], 'Web')
-        # self.assertEqual(data['alert']['value'], '85 Percentage CPU')
-        # self.assertEqual(data['alert']['text'], 'OK: 85 Percentage CPU (GreaterThan 90)')
-        # self.assertEqual(sorted(data['alert']['tags']), [])
+        new_metric_alert = r"""
+        {
+            "schemaId": "azureMonitorCommonAlertSchema",
+            "data": {
+                "essentials": {
+                    "alertId": "/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/providers/Microsoft.AlertsManagement/alerts/3dccd863-894e-44ed-a8bf-f73f15e3f48c",
+                    "alertRule": "Testrule too many good results",
+                    "severity": "Sev1",
+                    "signalType": "Metric",
+                    "monitorCondition": "Resolved",
+                    "monitoringService": "Platform",
+                    "alertTargetIDs": [
+                        "/subscriptions/90e39383-9de0-4f45-a582-3ab5a6428637/resourcegroups/testalert1/providers/microsoft.web/sites/alert-testing-web-foo"
+                    ],
+                    "originAlertId": "90e39383-9de0-4f45-a582-3ab5a6428637_testalert1_microsoft.Testrule too many good results_-1615335870",
+                    "firedDateTime": "2020-04-28T11:07:37.1106903Z",
+                    "resolvedDateTime": "2020-04-28T11:10:41.6356374Z",
+                    "description": "Description here, links https://fixme.io, http://foo.bar",
+                    "essentialsVersion": "1.0",
+                    "alertContextVersion": "1.0"
+                },
+                "alertContext": {
+                    "properties": null,
+                    "conditionType": "SingleResourceMultipleMetricCriteria",
+                    "condition": {
+                        "windowSize": "PT1M",
+                        "allOf": [
+                            {
+                                "metricName": "Http2xx",
+                                "metricNamespace": "Microsoft.Web/sites",
+                                "operator": "GreaterThan",
+                                "threshold": "1",
+                                "timeAggregation": "Total",
+                                "dimensions": [
+                                    {
+                                        "name": "ResourceId",
+                                        "value": "alert-testing-web-foo.azurewebsites.net"
+                                    }
+                                ],
+                                "metricValue": 0,
+                                "webTestName": null
+                            }
+                        ],
+                        "windowStartTime": "2020-04-28T11:06:21.649Z",
+                        "windowEndTime": "2020-04-28T11:07:21.649Z"
+                    }
+                }
+            }
+        }
+        """
+
+        response = self.client.post('/webhooks/azuremonitor', data=new_metric_alert, content_type='application/json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['status'], 'Closed')
 
 if __name__ == '__main__':
     unittest.main()
