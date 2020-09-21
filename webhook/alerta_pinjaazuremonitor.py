@@ -52,6 +52,8 @@ class AzureMonitorWebhook(WebhookBase):
 
         severity = SEVERITY_MAP[essentials.get('severity', DEFAULT_SEVERITY_LEVEL)]
         status = STATUS_MAP[essentials.get('monitorCondition', DEFAULT_STATUS)]
+        if (status == 'Closed'):
+            severity = 'ok'         # prevent duplicate classification of alert
 
         encoded_alert_id = urllib.parse.quote_plus(essentials['alertId'])
 
